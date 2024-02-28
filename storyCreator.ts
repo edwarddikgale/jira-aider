@@ -76,7 +76,7 @@ async function storyCreator() {
         console.log(jiraIssues[choiceIndex]);
         const push = await askQuestion("\n\nPush story to Jira? yes/no? ");
         if(push === "yes"){
-            commitIssueToJira(jiraIssues[choiceIndex]);
+            await commitIssueToJira(jiraIssues[choiceIndex]);
         }
     }
 
