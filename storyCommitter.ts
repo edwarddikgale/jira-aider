@@ -16,7 +16,7 @@ async function commitIssueToJira(issue: JiraIssue) {
         },
       });
   
-    issue.project.key = 'TPPAG';
+    issue.project.key = config.projectKey;
     // Assuming createIssueDescription is defined elsewhere and synchronous
     // issue.description = createIssueDescription(issue.description, issue.acceptanceCriteria);  
     delete issue.acceptanceCriteria;
