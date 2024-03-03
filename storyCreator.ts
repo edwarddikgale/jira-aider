@@ -27,8 +27,8 @@ function askQuestion(query: string) {
 }
 
 async function AskStoryQuestions(): Promise<StoryPromptDetails> {
-    const beneficiary = await askQuestion("Who is the ultimate beneficiary of this work (which user or stakeholder)? ");
     const goal = await askQuestion("What do you want to achieve? ");
+    const beneficiary = await askQuestion("Who is the ultimate beneficiary of this work (which user or stakeholder)? ");
     const importance = await askQuestion("Why is this important to this user or stakeholder? ");
     
     return {
@@ -39,12 +39,24 @@ async function AskStoryQuestions(): Promise<StoryPromptDetails> {
   }
 
 // Function to create a prompt from StoryDetails
-function createPromptFromStoryDetails(details: StoryPromptDetails): string {
+const createPromptFromStoryDetails = (details: StoryPromptDetails): string =>{
     const { beneficiary, goal, importance } = details;
     return `Create a user story with a short title (written as short form of user story e.g user can logout), description & basic acceptance criteria based on the following inputs:\nBeneficiary: ${beneficiary}\nGoal: ${goal}\nImportance: ${importance}\n\nUser Stories:`;
 }
 
-async function storyCreator() {
+const createCompletion = async (prompt: string, numResponses: number) => {
+
+    // Use the chat completions API
+    return await openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        messages: [{ role: "system", content: prompt }],
+        temperature: 0.7,
+        max_tokens: 300,
+        n: numResponses, // Since you're generating a single response, `n` is set to 1
+    });
+}
+
+const storyCreator = async () => {
     consoleLogInColor("\n ANSWER SIMPLE QUESTIONS BELOW TO CREATE A QUALITY USER STORY \n", ColorEnum.YELLOW);
     const storyPromptDetails = await AskStoryQuestions();
 
@@ -55,15 +67,8 @@ async function storyCreator() {
     const stories: string[] = [];
 
     try {
-      // Use the chat completions API
-      const completion = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: [{ role: "system", content: prompt }],
-        temperature: 0.7,
-        max_tokens: 300,
-        n: 2, // Since you're generating a single response, `n` is set to 1
-      });
-  
+      
+      const completion = await createCompletion(prompt, 2); 
       console.log("\n");
 
       // Accessing and printing the response
@@ -94,6 +99,7 @@ async function storyCreator() {
 
   const chooseStory = async (stories: string[], jiraIssues: JiraIssue[]) => {
     let storyChoice:any = ''; 
+    
     while(storyChoice != 'q'){
         storyChoice = await askQuestion("\nChoose a story to use by number (1/2/...) or type q to quit or rs to restart : ");
         if(storyChoice === 'q') {process.exit(); }

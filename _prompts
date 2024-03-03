@@ -1,3 +1,21 @@
-Developer
-Help them get started real quick and easy using our Rsk blockchain node
-To feel confident early they can build on rootstock
+EXAMPLE 1:
+
+Beneficiary: Dapp developer
+Trying to achieve: Help them get started real quick and easy using our Rsk blockchain node
+Why its important to them: To feel confident early they can build on rootstock
+
+EXAMPLE 2:
+
+Beneficiary: Blockhain node user
+Trying to achieve: Give them an option to sync their node in 4 hours or less instead of almost a week
+Why its important to them: So they can get started playing with rsk node earlier and even give us feedback earlier
+
+EXAMPLE 3:
+
+Beneficiary: Squad member
+Trying to achieve: Give them a simple way to create transparent user stories that meet dor, are clear, transparent and help increase autonomy within squad (i.e. anyone can do the work with the right guidance because they get the value to user or stakeholder)
+Why its important to them: So its faster and easier to write good quality user stories that their other members understand and also stakeholders from PO to users/developers etc
+
+----
+
+To run: npx ts-node storyCreator.ts
