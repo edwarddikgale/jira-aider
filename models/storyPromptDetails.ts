@@ -1,4 +1,4 @@
-export interface StoryPromptDetails {
+export interface BasicStoryCreatePrompt {
     beneficiary: string;
     goal: string;
     importance: string;

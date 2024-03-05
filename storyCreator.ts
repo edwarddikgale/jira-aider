@@ -3,86 +3,94 @@ import config from './config';
 import { JiraIssue } from './models/jiraIssue';
 import parseTextToJiraIssues from './jiraIssueParser';
 import commitIssueToJira from './storyCommitter';
-import { StoryPromptDetails } from './models/storyPromptDetails';
-import { ColorEnum, consoleLogInColor } from './consoleColorPrinter';
+import { BasicStoryCreatePrompt } from './models/storyPromptDetails';
+import { ColorEnum, consoleLogInColor } from './console/consoleColorPrinter';
 import { askQuestion } from './console/askQuestion';
+import createCompletion from './openai/createCompletion';
+import { askBasicStoryCreationQuestions } from './prompts/askStoryCreationQuestions';
 
 const openai = new OpenAI({
   apiKey: config.openAiKey
 });
 
-async function AskStoryQuestions(): Promise<StoryPromptDetails> {
-    const goal = await askQuestion("What do you want to achieve? ");
-    const beneficiary = await askQuestion("Who is the ultimate beneficiary of this work (which user or stakeholder)? ");
-    const importance = await askQuestion("Why is this important to this user or stakeholder? ");
-    
-    return {
-      beneficiary,
-      goal,
-      importance
-    } as StoryPromptDetails;
-}
+const MAX_RESPONSES = 5;
 
 // Function to create a prompt from StoryDetails
-const createPromptFromStoryDetails = (details: StoryPromptDetails): string =>{
+const createPromptFromStoryDetails = (details: BasicStoryCreatePrompt): string =>{
     const { beneficiary, goal, importance } = details;
     return `Create a user story with a short title (written as short form of user story e.g user can logout), description & basic acceptance criteria based on the following inputs:\nBeneficiary: ${beneficiary}\nGoal: ${goal}\nImportance: ${importance}\n\nUser Stories:`;
 }
 
-const createCompletion = async (prompt: string, numResponses: number) => {
+const storyCreator = async () => {
+    consoleLogInColor("\n ANSWER SIMPLE QUESTIONS BELOW TO CREATE A QUALITY USER STORY \n", ColorEnum.YELLOW);
+    const storyPromptDetails = await askBasicStoryCreationQuestions();
 
-    // Use the chat completions API
-    return await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: [{ role: "system", content: prompt }],
-        temperature: 0.7,
-        max_tokens: 300,
-        n: numResponses, // Since you're generating a single response, `n` is set to 1
+    const prompt = createPromptFromStoryDetails(storyPromptDetails);
+    await createStoryFromPrompt(prompt);
+}
+
+const printStoriesToConsole = (stories: string[]) => {
+
+    stories.forEach((story, index) => { 
+            consoleLogInColor(`\nOPTION: ${index + 1}\n`, ColorEnum.GREEN);
+            console.log(story);
     });
 }
 
-const storyCreator = async () => {
-    consoleLogInColor("\n ANSWER SIMPLE QUESTIONS BELOW TO CREATE A QUALITY USER STORY \n", ColorEnum.YELLOW);
-    const storyPromptDetails = await AskStoryQuestions();
 
-    // Construct the prompt
-    //const prompt = `Create a user story with a short title (written as short form of user story e.g user can logout) , description & basic acceptance criteria based on the following inputs:\nBeneficiary: ${beneficiary}\nGoal: ${goal}\nImportance: ${importance}\n\nUser Stories:`;
-    const prompt = createPromptFromStoryDetails(storyPromptDetails);
+const extractJiraIssues = (stories: string[]) =>{
     const jiraIssues: JiraIssue[] = [];
+
+    stories.forEach(story => {
+        const jiraIssue = parseTextToJiraIssues(story);
+        jiraIssues.push(jiraIssue);
+    });
+
+    return jiraIssues;
+}
+
+const extractStories = (completion: OpenAI.Chat.Completions.ChatCompletion) =>{
     const stories: string[] = [];
+
+    if (completion.choices && completion.choices.length > 0) {
+        completion.choices.forEach((choice, index) => {
+            const choices = choice.message.content?.split(/\n(?=Title: )/); 
+            if(choices === undefined) throw Error("Unable to extract stories from openAi response");
+            
+            choices.map(story => {
+                stories.push(story);
+            });
+        });
+
+        return stories;
+    } else {
+        throw Error("No completion choices found.");
+    }
+}
+
+const createStoryFromPrompt = async (prompt: string) => {
+    let jiraIssues: JiraIssue[] = [];
+    let stories: string[] = [];
 
     try {
       
-      const numOfResponses = await askQuestion("Number of response options (max 5): ");
+      const numOfResponses = await askQuestion(`Number of response options (max ${MAX_RESPONSES}): `);
       const numOfResponsesAsInt = parseInt(<string>numOfResponses);
-      const completion = await createCompletion(prompt, numOfResponsesAsInt); 
+      const responsesMax = numOfResponsesAsInt > MAX_RESPONSES? MAX_RESPONSES: numOfResponsesAsInt;
+      const completion = await createCompletion(prompt, responsesMax); 
+
       console.log("\n");
+      stories = extractStories(completion);
+      printStoriesToConsole(stories);
+      jiraIssues = extractJiraIssues(stories);  
 
-      // Accessing and printing the response
-      if (completion.choices && completion.choices.length > 0) {
-        completion.choices.forEach((choice, index) => {
-            const stories = choice.message.content?.split(/\n(?=Title: )/); 
-            if(stories === undefined) throw Error("Unable to extract stories from openAi response");
-            
-            stories.map(story => {
-                const jiraIssue = parseTextToJiraIssues(story);
-                jiraIssues.push(jiraIssue);
-                stories.push(story);
-
-                consoleLogInColor(`\nOPTION: ${index + 1}\n`, ColorEnum.GREEN);
-                console.log(story);
-            });
-        });
-      } else {
-        console.log("No completion choices found.");
-      }
     } catch (error) {
       console.error('Error generating user stories:', error);
     }
 
     chooseStory(stories, jiraIssues);
 
-  }
+}
 
   const chooseStory = async (stories: string[], jiraIssues: JiraIssue[]) => {
     let storyChoice:any = ''; 
