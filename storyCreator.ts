@@ -1,4 +1,3 @@
-import * as readline from 'readline';
 import OpenAI from 'openai';
 import config from './config';
 import { JiraIssue } from './models/jiraIssue';
@@ -6,25 +5,11 @@ import parseTextToJiraIssues from './jiraIssueParser';
 import commitIssueToJira from './storyCommitter';
 import { StoryPromptDetails } from './models/storyPromptDetails';
 import { ColorEnum, consoleLogInColor } from './consoleColorPrinter';
+import { askQuestion } from './console/askQuestion';
 
 const openai = new OpenAI({
   apiKey: config.openAiKey
 });
-
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
-
-// Helper function to wrap readline.question in a promise
-function askQuestion(query: string) {
-    // ANSI escape code for blue text
-    const blue = '\x1b[34m';
-    // ANSI reset code to reset text color
-    const reset = '\x1b[0m';
-    
-    return new Promise(resolve => rl.question(blue + query + reset, (answer) => resolve(answer)));
-}
 
 async function AskStoryQuestions(): Promise<StoryPromptDetails> {
     const goal = await askQuestion("What do you want to achieve? ");
@@ -36,7 +21,7 @@ async function AskStoryQuestions(): Promise<StoryPromptDetails> {
       goal,
       importance
     } as StoryPromptDetails;
-  }
+}
 
 // Function to create a prompt from StoryDetails
 const createPromptFromStoryDetails = (details: StoryPromptDetails): string =>{
@@ -68,7 +53,9 @@ const storyCreator = async () => {
 
     try {
       
-      const completion = await createCompletion(prompt, 2); 
+      const numOfResponses = await askQuestion("Number of response options (max 5): ");
+      const numOfResponsesAsInt = parseInt(<string>numOfResponses);
+      const completion = await createCompletion(prompt, numOfResponsesAsInt); 
       console.log("\n");
 
       // Accessing and printing the response
@@ -99,7 +86,7 @@ const storyCreator = async () => {
 
   const chooseStory = async (stories: string[], jiraIssues: JiraIssue[]) => {
     let storyChoice:any = ''; 
-    
+
     while(storyChoice != 'q'){
         storyChoice = await askQuestion("\nChoose a story to use by number (1/2/...) or type q to quit or rs to restart : ");
         if(storyChoice === 'q') {process.exit(); }

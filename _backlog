@@ -1,3 +1,8 @@
 1. User should be able to ask jira-aider to try again with some extra text prompt from them
 2. User should be able to ask for more options with extra text from them
 3. User should be able to enter number of options to have more variety to choose from
+4. User should be able to Refactor existing story
+5. User should be able to perform user story mapping exercise
+6. User should be able to analyse their backlog to see which tickets could have the same parent as a user story
+7. User should be able to create a sprint goal from their sprint backlog
+8. User should have acceptance criteria created as subtasks (if opted for)
