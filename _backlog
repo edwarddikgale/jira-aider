@@ -6,3 +6,8 @@
 6. User should be able to analyse their backlog to see which tickets could have the same parent as a user story
 7. User should be able to create a sprint goal from their sprint backlog
 8. User should have acceptance criteria created as subtasks (if opted for)
+9. User should have clearer questions with examples
+10. User should know if their input is vague or too generic so they can retry
+11. User should be able to analyse their user story based on DoR 
+12. User should be able to analyse their user story based on general best practices (too big, too small etc, INVEST)
+13. User should be able to analyse their sprint backlog based on INVEST princinples
