@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
 import { JiraIssue } from './models/jiraIssue';
-import commitIssueToJira from './storyCommitter';
+import {createJiraIssue, updateJiraIssue} from './storyCommitter';
 import { ColorEnum, consoleLogInColor } from './console/consoleColorPrinter';
 import { askQuestion } from './console/askQuestion';
 import createCompletion from './openai/createCompletion';
@@ -15,6 +15,7 @@ interface AIStoryGenerator{
 class ConsoleStoryGenerator implements AIStoryGenerator{
 
     MAX_RESPONSES:number = 5;
+    private issueIdOrKey:string = '';
 
     extractStories = (completion: OpenAI.Chat.Completions.ChatCompletion) =>{
         const stories: string[] = [];
@@ -49,12 +50,11 @@ class ConsoleStoryGenerator implements AIStoryGenerator{
         return numOfResponsesAsInt > this.MAX_RESPONSES? this.MAX_RESPONSES: numOfResponsesAsInt;
     }
     
-    createStoryFromPrompt = async (prompt: string) => {
+    createStoryFromPrompt = async (prompt: string, numOfOptions: number) => {
         let jiraIssues: JiraIssue[] = [];
         let stories: string[] = [];
     
         try {
-          const numOfOptions = await this.getNumResponseOptions();
           const completion = await createCompletion(prompt, numOfOptions); 
     
           console.log("\n");
@@ -70,6 +70,18 @@ class ConsoleStoryGenerator implements AIStoryGenerator{
     
     }
 
+    refactorStoryFromPrompt = async (issueIdOrKey: string, prompt: string) => {
+        if(issueIdOrKey == '' || issueIdOrKey === null || issueIdOrKey === undefined){
+            throw Error("Invalid issue id or key param. This param cannot be an empty string, null or undefined");
+        }
+        this.issueIdOrKey = issueIdOrKey;
+        this.createStoryFromPrompt(prompt, 1);
+    }
+
+    private issueAlreadyExists = () => {
+        return this.issueIdOrKey != "";
+    }
+
     private chooseJiraIssue = async (jiraIssues: JiraIssue[]) => {
         let storyChoice:any = ''; 
     
@@ -78,13 +90,18 @@ class ConsoleStoryGenerator implements AIStoryGenerator{
             if(storyChoice === 'q') { process.exit(); }
             if(storyChoice === 'rs') { this.start(); return; }
     
-            consoleLogInColor(`\nYou chose story ${storyChoice}`, ColorEnum.MAGENTA);
+            consoleLogInColor(`\nYou chose story ${storyChoice}\n`, ColorEnum.MAGENTA);
             const choiceIndex = parseInt(storyChoice) - 1;
             console.log(jiraIssues[choiceIndex]);
-    
-            const push = await askQuestion("\n\nPush story to Jira? yes/no? ");
-            if(push === "yes"){
-                await commitIssueToJira(jiraIssues[choiceIndex]);
+
+            const changesText = this.issueAlreadyExists()? `changes for ${this.issueIdOrKey} `: "";  
+            const push = await askQuestion(`\n\nPush story ${changesText} to Jira? yes/no?: `);
+
+            if(push === "yes" && !this.issueAlreadyExists()){
+                await createJiraIssue(jiraIssues[choiceIndex]);
+            }
+            if(push === "yes" && this.issueAlreadyExists()){
+                await updateJiraIssue(this.issueIdOrKey, jiraIssues[choiceIndex]);
             }
             else{
                 //storyCreator();
@@ -98,7 +115,8 @@ class ConsoleStoryGenerator implements AIStoryGenerator{
         const storyPromptDetails = await askBasicStoryCreationQuestions();
     
         const prompt = createPromptFromStoryDetails(storyPromptDetails);
-        await this.createStoryFromPrompt(prompt);
+        const numOfOptions = await this.getNumResponseOptions();
+        await this.createStoryFromPrompt(prompt, numOfOptions);
     }
 
 }
