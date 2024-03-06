@@ -1,25 +1,14 @@
 import OpenAI from 'openai';
-import config from './config';
 import { JiraIssue } from './models/jiraIssue';
-import parseTextToJiraIssues from './jiraIssueParser';
 import commitIssueToJira from './storyCommitter';
-import { BasicStoryCreatePrompt } from './models/storyPromptDetails';
 import { ColorEnum, consoleLogInColor } from './console/consoleColorPrinter';
 import { askQuestion } from './console/askQuestion';
 import createCompletion from './openai/createCompletion';
 import { askBasicStoryCreationQuestions } from './prompts/askStoryCreationQuestions';
-
-const openai = new OpenAI({
-  apiKey: config.openAiKey
-});
+import extractJiraIssues from './jira/extractJiraIssues';
+import {createPromptFromStoryDetails} from './prompts/createPrompt';
 
 const MAX_RESPONSES = 5;
-
-// Function to create a prompt from StoryDetails
-const createPromptFromStoryDetails = (details: BasicStoryCreatePrompt): string =>{
-    const { beneficiary, goal, importance } = details;
-    return `Create a user story with a short title (written as short form of user story e.g user can logout), description & basic acceptance criteria based on the following inputs:\nBeneficiary: ${beneficiary}\nGoal: ${goal}\nImportance: ${importance}\n\nUser Stories:`;
-}
 
 const storyCreator = async () => {
     consoleLogInColor("\n ANSWER SIMPLE QUESTIONS BELOW TO CREATE A QUALITY USER STORY \n", ColorEnum.YELLOW);
@@ -35,18 +24,6 @@ const printStoriesToConsole = (stories: string[]) => {
             consoleLogInColor(`\nOPTION: ${index + 1}\n`, ColorEnum.GREEN);
             console.log(story);
     });
-}
-
-
-const extractJiraIssues = (stories: string[]) =>{
-    const jiraIssues: JiraIssue[] = [];
-
-    stories.forEach(story => {
-        const jiraIssue = parseTextToJiraIssues(story);
-        jiraIssues.push(jiraIssue);
-    });
-
-    return jiraIssues;
 }
 
 const extractStories = (completion: OpenAI.Chat.Completions.ChatCompletion) =>{
@@ -85,19 +62,19 @@ const createStoryFromPrompt = async (prompt: string) => {
       jiraIssues = extractJiraIssues(stories);  
 
     } catch (error) {
-      console.error('Error generating user stories:', error);
+      console.error('Error extracting user stories:', error);
     }
 
-    chooseStory(stories, jiraIssues);
+    chooseJiraIssue(jiraIssues);
 
 }
 
-  const chooseStory = async (stories: string[], jiraIssues: JiraIssue[]) => {
+const chooseJiraIssue = async (jiraIssues: JiraIssue[]) => {
     let storyChoice:any = ''; 
 
     while(storyChoice != 'q'){
         storyChoice = await askQuestion("\nChoose a story to use by number (1/2/...) or type q to quit or rs to restart : ");
-        if(storyChoice === 'q') {process.exit(); }
+        if(storyChoice === 'q') { process.exit(); }
         if(storyChoice === 'rs') { storyCreator(); return; }
 
         consoleLogInColor(`\nYou chose story ${storyChoice}`, ColorEnum.MAGENTA);
@@ -109,11 +86,11 @@ const createStoryFromPrompt = async (prompt: string) => {
             await commitIssueToJira(jiraIssues[choiceIndex]);
         }
         else{
-            storyCreator();
+            //storyCreator();
             process.exit();
         }
     }
-  }
+}
 
-  //call starting function
-  storyCreator();
+//call starting function
+storyCreator();

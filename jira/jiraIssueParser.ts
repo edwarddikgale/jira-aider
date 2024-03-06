@@ -1,4 +1,4 @@
-import { JiraIssue } from "./models/jiraIssue";
+import { JiraIssue } from "../models/jiraIssue";
 
 const parseTextToJiraIssue = (story: string | null): JiraIssue => {
       if(story === null) throw Error("Unable to parse null story");

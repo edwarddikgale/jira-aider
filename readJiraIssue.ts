@@ -28,7 +28,7 @@ const printIssueToConsole = async (issue: any) => {
     console.log(` ${parseDescription(issue.fields.description?.content)}`);
 
     console.log("\n");
-    const issueId = <string>(await askQuestion(`Please enter your Jira issue ID or Key, e.g ${exampleInput}: `));
+    const isRewrite = <string>(await askQuestion(`Do you want to re-write/upgrade this issue? yes/no`));
     //console.log(`Description: ${issue.fields.description.content[0].content[0].text}`);
     //console.log(issue);
     //const newIssue = await client.issues.createIssue({ issueIdOrKey: issueId });
