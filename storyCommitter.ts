@@ -1,28 +1,22 @@
 import config from './config';
-import { Version3Client } from 'jira.js';
 import { JiraIssue } from './models/jiraIssue';
+import constructJiraClient from './jira/jiraClient';
 
-const jiraBaseUrl = 'https://rsklabs.atlassian.net';
+const commentDateUpdated = async(issueId: string) => {
+        const todayDate = new Date().toISOString().split('T')[0];
+        const client = constructJiraClient();
 
-const constructJiraClient = () => {
-    return new Version3Client({
-            host: jiraBaseUrl,
-            authentication: {
-            basic: {
-                email: config.userEmail,
-                apiToken: config.apiKey,
-            },
-        },
-    }); 
+        // Add a comment to the issue
+        await client.issueComments.addComment({
+          issueIdOrKey: issueId,
+          comment: `Updated by JiraAider on ${todayDate}`,
+        });
 }
 
 const updateJiraIssue = async(issueId: string, issue: JiraIssue) => {
     const client = constructJiraClient();
     issue.project.key = config.projectKey;
-    // Assuming createIssueDescription is defined elsewhere and synchronous
-    // issue.description = createIssueDescription(issue.description, issue.acceptanceCriteria);  
     delete issue.acceptanceCriteria;
-    let issueData = { fields: issue };
       
     try {
       // Wait for the issue creation to complete
@@ -32,6 +26,8 @@ const updateJiraIssue = async(issueId: string, issue: JiraIssue) => {
           summary: issue.summary,
           description: issue.description,
         },});
+
+      await commentDateUpdated(issueId);  
       console.log(`Issue ${issueId} updated successfully. Check Jira for changes.`);
     } catch (err) {
       // Assuming err is of type any; you might want to handle specific error types differently
@@ -52,6 +48,7 @@ async function createJiraIssue(issue: JiraIssue) {
     try {
       // Wait for the issue creation to complete
       const createdIssue = await client.issues.createIssue(issueData);
+      await commentDateUpdated(createdIssue.key);
       console.log(`New issue created: ${createdIssue.key} in Jira. Check Jira backlog for verification.`);
     } catch (err) {
       // Assuming err is of type any; you might want to handle specific error types differently
@@ -59,7 +56,6 @@ async function createJiraIssue(issue: JiraIssue) {
     }
   }
   
-
   const createIssueDescription = (story: string, criteria?: string[]): string =>{
     if(criteria === undefined) return `Description:\n${story}`;
     

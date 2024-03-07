@@ -1,7 +1,7 @@
-1. User should be able to ask jira-aider to try again with some extra text prompt from them
-2. User should be able to ask for more options with extra text from them
+1. X User should be able to ask jira-aider to try again with some extra text prompt from them
+2. X User should be able to ask for more options with extra text from them
 3. User should be able to enter number of options to have more variety to choose from
-4. User should be able to Refactor existing story
+4. X User should be able to Refactor existing story
 5. User should be able to perform user story mapping exercise
 6. User should be able to analyse their backlog to see which tickets could have the same parent as a user story
 7. User should be able to create a sprint goal from their sprint backlog
@@ -12,5 +12,5 @@
 12. User should be able to analyse their user story based on general best practices (too big, too small etc, INVEST)
 13. User should be able to analyse their sprint backlog based on INVEST princinples
 14. User should be able to extract a sprint goal based on sprint backlog
-15. User should know if a new version is available for download
-16. User should know what is in the new version
+15. User should know if a new version of jira-issue-aider is available for download
+16. User should know what is in the new version of jira-issue-aider so they know why upgrade is necessary
