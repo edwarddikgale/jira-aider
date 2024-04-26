@@ -48,9 +48,7 @@ class ConsoleStoryGenerator implements AIStoryGenerator{
     getNumResponseOptions = async (): Promise<number> => {
         const inputValidator = new StoryChoiceInputValidator(this.MAX_RESPONSES); //todo: inject this
         const storyOptionsPrompt = `How many user story options do you want? (max ${this.MAX_RESPONSES}): `;
-        const numOfResponses = await inputValidator.getValidNumberInput(storyOptionsPrompt);
-        //const numOfResponses = await askQuestion(`How many user story options do you want? (max ${this.MAX_RESPONSES}): `);
-        //const numOfResponsesAsInt = parseInt(<string>numOfResponses);
+        const numOfResponses = await inputValidator.getMaxStoryOptionsInput(storyOptionsPrompt);
         return numOfResponses > this.MAX_RESPONSES? this.MAX_RESPONSES: numOfResponses;
     }
     
@@ -88,9 +86,13 @@ class ConsoleStoryGenerator implements AIStoryGenerator{
 
     private chooseJiraIssue = async (jiraIssues: JiraIssue[]) => {
         let storyChoice:any = ''; 
-    
+        const inputValidator = new StoryChoiceInputValidator(this.MAX_RESPONSES); //todo: inject this
+
         while(storyChoice != 'q'){
-            storyChoice = await askQuestion("\nChoose a story to use by number (1/2/...) or type q to quit or rs to restart : ");
+            const storyChoicePrompt = "\nChoose a story to use by number (1/2/...) or type q to quit or rs to restart : ";
+            const promptOptions = ['q','s'];
+            storyChoice = await inputValidator.getSelectedStoryIndex(storyChoicePrompt, jiraIssues.length, promptOptions);
+
             if(storyChoice === 'q') { process.exit(); }
             if(storyChoice === 'rs') { this.start(); return; }
     

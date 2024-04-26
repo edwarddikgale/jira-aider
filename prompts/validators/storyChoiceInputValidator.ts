@@ -7,7 +7,7 @@ class StoryChoiceInputValidator {
         this.MAX_RESPONSES = maxResponses;
     }
 
-    async getValidNumberInput(promptMessage: string): Promise<number> {
+    async getMaxStoryOptionsInput(promptMessage: string): Promise<number> {
         let input: string;
         let number: number;
 
@@ -16,11 +16,33 @@ class StoryChoiceInputValidator {
             number = parseInt(input);
 
             if (isNaN(number) || number <= 0 || number > this.MAX_RESPONSES) {
-                console.log(`Invalid input. Please enter a number between 1 and ${this.MAX_RESPONSES}.`);
+                console.log(`\n Invalid input. Please enter a number between 1 and ${this.MAX_RESPONSES}.`);
             }
         } while (isNaN(number) || number <= 0 || number > this.MAX_RESPONSES);
 
         return number;
+    }
+
+    async getSelectedStoryIndex(promptMessage: string, numOfOptions: number, promptOptions: string[]): Promise<number> {
+        let input: string;
+        let index: number;
+
+        do {
+            input = await askQuestion(promptMessage) as string;
+            if(this.isInputOptionValid(input, promptOptions)) return -1;
+            
+            index = parseInt(input);
+
+            if (isNaN(index) || index < 1 || index > numOfOptions) {
+                console.log(`\n Invalid input. Please enter a number between 1 and ${numOfOptions}.`);
+            }
+        } while (isNaN(index) || index < 1 || index > numOfOptions);
+
+        return index;
+    }
+
+    isInputOptionValid = (input: string, inputOptions: string[]): boolean => {
+        return inputOptions.includes(input);
     }
 }
 
