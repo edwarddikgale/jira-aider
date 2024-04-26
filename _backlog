@@ -1,16 +1,5 @@
+5. User should be able to perform user story mapping exercise
+9. User should have clearer questions with examples
+
 1. X User should be able to ask jira-aider to try again with some extra text prompt from them
 2. X User should be able to ask for more options with extra text from them
-3. User should be able to enter number of options to have more variety to choose from
-4. X User should be able to Refactor existing story
-5. User should be able to perform user story mapping exercise
-6. User should be able to analyse their backlog to see which tickets could have the same parent as a user story
-7. User should be able to create a sprint goal from their sprint backlog
-8. User should have acceptance criteria created as subtasks (if opted for)
-9. User should have clearer questions with examples
-10. User should know if their input is vague or too generic so they can retry
-11. User should be able to analyse their user story based on DoR 
-12. User should be able to analyse their user story based on general best practices (too big, too small etc, INVEST)
-13. User should be able to analyse their sprint backlog based on INVEST princinples
-14. User should be able to extract a sprint goal based on sprint backlog
-15. User should know if a new version of jira-issue-aider is available for download
-16. User should know what is in the new version of jira-issue-aider so they know why upgrade is necessary

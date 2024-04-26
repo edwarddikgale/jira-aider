@@ -65,7 +65,7 @@ const getIssueBasicSummary = (issue: any) => {
 
 const reWriteIssue = async(issue: JiraIssue) => {
     const reWriteEg = "e.g: Use best practices/Make it more precise/etc";
-    const reWriteInput = <string>(await askQuestion(`What should I use to re-write this user story id: ${jiraIssueId} ? ${reWriteEg} : `));
+    const reWriteInput = <string>(await askQuestion(`How should I re-write or improve this user story, id: ${jiraIssueId} ? ${reWriteEg} : `));
     const reWritePrompt = `Re write this story, ${getIssueBasicSummary(issue)}, this way ${reWriteInput}`;
     let consoleStoryGenerator = new ConsoleStoryGenerator();
     consoleStoryGenerator.refactorStoryFromPrompt(jiraIssueId, reWritePrompt);

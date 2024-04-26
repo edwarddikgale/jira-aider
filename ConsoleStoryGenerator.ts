@@ -7,6 +7,7 @@ import createCompletion from './openai/createCompletion';
 import { askBasicStoryCreationQuestions } from './prompts/askStoryCreationQuestions';
 import extractJiraIssues from './jira/extractJiraIssues';
 import {createPromptFromStoryDetails} from './prompts/createPrompt';
+import StoryChoiceInputValidator from './prompts/validators/storyChoiceInputValidator';
 
 interface AIStoryGenerator{
 
@@ -45,9 +46,12 @@ class ConsoleStoryGenerator implements AIStoryGenerator{
     }
 
     getNumResponseOptions = async (): Promise<number> => {
-        const numOfResponses = await askQuestion(`How many user story options do you want? (max ${this.MAX_RESPONSES}): `);
-        const numOfResponsesAsInt = parseInt(<string>numOfResponses);
-        return numOfResponsesAsInt > this.MAX_RESPONSES? this.MAX_RESPONSES: numOfResponsesAsInt;
+        const inputValidator = new StoryChoiceInputValidator(this.MAX_RESPONSES); //todo: inject this
+        const storyOptionsPrompt = `How many user story options do you want? (max ${this.MAX_RESPONSES}): `;
+        const numOfResponses = await inputValidator.getValidNumberInput(storyOptionsPrompt);
+        //const numOfResponses = await askQuestion(`How many user story options do you want? (max ${this.MAX_RESPONSES}): `);
+        //const numOfResponsesAsInt = parseInt(<string>numOfResponses);
+        return numOfResponses > this.MAX_RESPONSES? this.MAX_RESPONSES: numOfResponses;
     }
     
     createStoryFromPrompt = async (prompt: string, numOfOptions: number) => {
