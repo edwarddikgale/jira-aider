@@ -91,28 +91,37 @@ class ConsoleStoryGenerator implements AIStoryGenerator{
         while(storyChoice != 'q'){
             const storyChoicePrompt = "\nChoose a story to use by number (1/2/...) or type q to quit or rs to restart : ";
             const promptOptions = ['q','s'];
-            storyChoice = await inputValidator.getSelectedStoryIndex(storyChoicePrompt, jiraIssues.length, promptOptions);
+            storyChoice = await inputValidator.getSelectedStoryOption(storyChoicePrompt, jiraIssues.length, promptOptions);
 
-            if(storyChoice === 'q') { process.exit(); }
             if(storyChoice === 'rs') { this.start(); return; }
-    
-            consoleLogInColor(`\nYou chose story ${storyChoice}\n`, ColorEnum.MAGENTA);
-            const choiceIndex = parseInt(storyChoice) - 1;
-            console.log(jiraIssues[choiceIndex]);
-
-            const changesText = this.issueAlreadyExists()? `changes for ${this.issueIdOrKey} `: "";  
-            const push = await askQuestion(`\n\nPush story ${changesText} to Jira? yes/no?: `);
-
-            if(push === "yes" && !this.issueAlreadyExists()){
-                await createJiraIssue(jiraIssues[choiceIndex]);
-            }
-            if(push === "yes" && this.issueAlreadyExists()){
-                await updateJiraIssue(this.issueIdOrKey, jiraIssues[choiceIndex]);
-            }
-            else{
-                //storyCreator();
+            if(storyChoice === 'q') { 
                 process.exit();
             }
+            else{
+                this.commitIssueToJira(jiraIssues, storyChoice);
+            }    
+        }
+    }
+
+    private commitIssueToJira = async (jiraIssues: JiraIssue[], storyChoice: string) => {
+        consoleLogInColor(`\nYou chose story ${storyChoice}\n`, ColorEnum.MAGENTA);
+        const choiceIndex = parseInt(storyChoice) - 1;
+        if(choiceIndex === undefined || choiceIndex === null) return;
+
+        console.log(jiraIssues[choiceIndex]);
+
+        const changesText = this.issueAlreadyExists()? `changes for ${this.issueIdOrKey} `: "";  
+        const push = await askQuestion(`\n\nPush story ${changesText} to Jira? yes/no?: `);
+
+        if(push === "yes" && !this.issueAlreadyExists()){
+            await createJiraIssue(jiraIssues[choiceIndex]);
+        }
+        if(push === "yes" && this.issueAlreadyExists()){
+            await updateJiraIssue(this.issueIdOrKey, jiraIssues[choiceIndex]);
+        }
+        else{
+            //storyCreator();
+            process.exit();
         }
     }
 

@@ -23,13 +23,13 @@ class StoryChoiceInputValidator {
         return number;
     }
 
-    async getSelectedStoryIndex(promptMessage: string, numOfOptions: number, promptOptions: string[]): Promise<number> {
+    async getSelectedStoryOption(promptMessage: string, numOfOptions: number, promptOptions: string[]): Promise<string> {
         let input: string;
         let index: number;
 
         do {
             input = await askQuestion(promptMessage) as string;
-            if(this.isInputOptionValid(input, promptOptions)) return -1;
+            if(this.isInputOptionValid(input, promptOptions)) return input;
             
             index = parseInt(input);
 
@@ -38,7 +38,7 @@ class StoryChoiceInputValidator {
             }
         } while (isNaN(index) || index < 1 || index > numOfOptions);
 
-        return index;
+        return index.toString();
     }
 
     isInputOptionValid = (input: string, inputOptions: string[]): boolean => {
