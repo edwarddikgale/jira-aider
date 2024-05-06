@@ -3,3 +3,7 @@ export interface BasicStoryCreatePrompt {
     goal: string;
     importance: string;
 }
+
+export interface IssueRefactorPrompt {
+    details: string;
+}

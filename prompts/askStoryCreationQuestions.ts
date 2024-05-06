@@ -1,5 +1,5 @@
 import { askQuestion } from "../console/askQuestion";
-import { BasicStoryCreatePrompt } from "../models/storyPromptDetails";
+import { BasicStoryCreatePrompt, IssueRefactorPrompt } from "../models/storyPromptDetails";
 
 const askBasicStoryCreationQuestions = async(): Promise<BasicStoryCreatePrompt> => {
     const goal = await askQuestion("What do you want to achieve? ");
@@ -13,4 +13,12 @@ const askBasicStoryCreationQuestions = async(): Promise<BasicStoryCreatePrompt> 
     } as BasicStoryCreatePrompt;
 }
 
-export {askBasicStoryCreationQuestions};
+const askIssueRefactorQuestions = async(): Promise<IssueRefactorPrompt> => {
+  const details = await askQuestion("How would you like to modify this issue/user-story, be as specific as possible");
+  
+  return {
+    details
+  } as IssueRefactorPrompt;
+}
+
+export {askBasicStoryCreationQuestions, askIssueRefactorQuestions};

@@ -1,0 +1,3 @@
+{
+    "formatExample": "Title: PO can report bugs\nDescription: As a Product Owner (PO), I want to be able to report bugs in the system so that they can be addressed promptly.\n\nAcceptance Criteria:\n- PO can access the bug reporting feature from the dashboard.\n- PO can fill out a form with details of the bug, including description, severity, and steps to reproduce.\n- PO can submit the bug report.\n- Once submitted, the bug report is logged in the system for the development team to review and prioritize.\n- PO receives a confirmation message after successfully submitting the bug report."
+}
